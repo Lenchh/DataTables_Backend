@@ -1,0 +1,53 @@
+* {
+    box-sizing: border-box;
+}
+
+body,
+html {
+    margin: 0;
+    background-image: url(background.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+table,
+th,
+td {
+    border-spacing: 10px;
+    color: black;
+}
+
+table {
+    width: 95%;
+    margin: 30px auto;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 5px;
+}
+
+th {
+    background-color: rgba(116, 72, 93, 0.409);
+    color: rgb(41, 44, 46);
+    border-color: white;
+}
+
+td:hover,
+tr:hover {
+    box-shadow: 0 0 13px rgb(84, 37, 59);
+}
+
+tr:hover td {
+    color: rgb(136, 8, 8);
+}
+
+.playfair-display {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-style: normal;
+}
