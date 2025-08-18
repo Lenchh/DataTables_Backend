@@ -96,8 +96,21 @@ tr:hover td {
     margin: 0 auto;
 }
 
-.current-input {
+.input-and-label {
     margin: 5px;
+}
+
+.current-input {
+    width: 50%;
+    max-width: 250px;
+    margin-left: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end;
+    max-width: 70%;
+    padding-right: 10px;
 }
 
 .save-button {
@@ -127,4 +140,13 @@ tr:hover td {
 
 img {
     max-width: 100px;
+}
+
+.remove-button {
+    background-color: red;
+    margin-right: 10px;
+}
+
+.edit-button {
+    background-color: yellow;
 }
