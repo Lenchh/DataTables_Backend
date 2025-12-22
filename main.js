@@ -1,5 +1,8 @@
 function DataTable(config, data) {
-  document.querySelector(config.parent).appendChild(createButton("Додати", "add-button", "", () => addModalWindow(config)));
+  document.querySelector(config.parent).appendChild(createButton("Додати", "add-button", "inter-font", () => addModalWindow(config)));
+
+  const tableWrap = document.createElement("div");
+  tableWrap.classList.add("table-wrap");
 
   const table = document.createElement("table");
 
@@ -10,7 +13,8 @@ function DataTable(config, data) {
   } else {
     table.appendChild(createRow(data, config));
   }
-  document.querySelector(config.parent).appendChild(table);
+  tableWrap.appendChild(table);
+  document.querySelector(config.parent).appendChild(tableWrap);
 }
 
 function createButton(content, nameClass, otherNameClass, functionClick) {
@@ -26,21 +30,25 @@ function createButton(content, nameClass, otherNameClass, functionClick) {
 function addModalWindow(config, elementOfData, id) {
   const modalWindow = document.createElement("div");
   modalWindow.classList.add("modal-window");
+  const modalContent = document.createElement("div");
+  modalContent.classList.add("modal-content");
 
-  const inputContainer = document.createElement("div");
-  inputContainer.classList.add("input-container");
+  const header = document.createElement("h2");
+  header.textContent = "Add/Edit Record";
+  modalContent.appendChild(header);
+
   for (const column of config.columns) {
     const currentInput = createInput(column, elementOfData);
     if (currentInput)
-      inputContainer.appendChild(currentInput);
+      modalContent.appendChild(currentInput);
   }
-  modalWindow.appendChild(inputContainer);
 
   const containerButton = document.createElement("div");
   containerButton.classList.add("button-container");
-  containerButton.appendChild(createButton("Зберегти", "save-button", "", () => saveData(modalWindow, config, elementOfData, id)));
+  containerButton.appendChild(createButton("Зберегти", "save-button", "", () => saveData(modalContent, modalWindow, config, elementOfData, id)));
   containerButton.appendChild(createButton("Закрити", "save-button", "close-button", () => closeModalWindow(modalWindow)));
-  modalWindow.appendChild(containerButton);
+  modalContent.appendChild(containerButton);
+  modalWindow.appendChild(modalContent);
   document.body.appendChild(modalWindow);
 }
 
@@ -49,13 +57,9 @@ function createInput(column, elementOfData) {
     return null;
 
   const currentInput = document.createElement("div"); // create container for label + input
-  currentInput.classList.add("input-and-label");
 
   const dataArray = Array.isArray(column.input) ? column.input : [column.input];
   for (const elementInput of dataArray) {
-
-    const label = document.createElement("label");
-    label.textContent = elementInput.label || column.title;
 
     let input;
     if (elementInput.type === "select") {
@@ -72,8 +76,17 @@ function createInput(column, elementOfData) {
 
     else {
       input = document.createElement("input");
-      input.classList.add("current-input");
+      input.classList.add("input-text");
       input.type = elementInput.type || "text";
+      input.placeholder = elementInput.label || column.title;
+      if(elementInput.type === 'number') {
+        input.min = "1";
+        input.value = "1";
+      }
+      if(elementInput.type === 'color') {
+        input.classList.remove("input-text");
+        input.classList.add("color-input");
+      }
     }
 
     input.name = elementInput.name || column.value;
@@ -84,15 +97,14 @@ function createInput(column, elementOfData) {
       } else
         input.value = elementOfData[input.name];
     }
-    currentInput.appendChild(label);
     currentInput.appendChild(input);
   }
   return currentInput;
 }
 
-async function saveData(modalWindow, config, el, id) {
+async function saveData(modalContent, modalWindow, config, el, id) {
   let newValue = {};
-  modalWindow.querySelectorAll("input, select").forEach(input => {
+  modalContent.querySelectorAll("input, select").forEach(input => {
     if (input.value.trim() === "") {
       input.style.borderColor = "red";
       newValue = null;
@@ -129,6 +141,7 @@ async function saveData(modalWindow, config, el, id) {
     } else
       alert("Error :(");
   }
+  closeModalWindow(modalWindow);
 }
 
 function closeModalWindow(modalWindow) {
@@ -163,8 +176,8 @@ function createRow(data, config) {
     for (const key of config.columns) {
       const cell = document.createElement("td");
       if (key.value === "actions") {   // add buttons "Видалити" and "Редагувати"
-        cell.appendChild(createButton("Видалити", "remove-button", "", () => deleteItem(config.apiUrl + "/" + id, config)));
-        cell.appendChild(createButton("Редагувати", "edit-button", "", () => addModalWindow(config, element, id)));
+        cell.appendChild(createButton(".", "edit-button", "", () => addModalWindow(config, element, id)));
+        cell.appendChild(createButton(".", "remove-button", "", () => deleteItem(config.apiUrl + "/" + id, config)));
       }
       else if (typeof key.value === "function") { // if getAge() or getColor() or img
         if (typeof key.value(element) === "string") { // if getAge()
@@ -200,11 +213,22 @@ const config1 = {
     { title: 'Ім’я', value: 'name', input: { type: 'text' } },
     { title: 'Прізвище', value: 'surname', input: { type: 'text' } },
     { title: 'Вік', value: (user) => getAge(user.birthday), input: { type: "date", name: "birthday", label: "День народження" } },
-    { title: 'Фото', value: (user) => `<img src="${user.avatar}" alt="${user.name} ${user.surname}"/>`, input: { type: "url", name: "avatar" } },
+    { title: 'Фото', value: (user) => 
+      `<img src="${user.avatar}" alt="${user.name[0]}${user.surname[0]}" onerror="handleImgError(this)"/>`, 
+       input: { type: "url", name: "avatar" } },
     { title: 'Дії', value: 'actions' }
   ],
   apiUrl: "https://mock-api.shpp.me/opletnova/users"
 };
+
+function handleImgError(img) {
+  const color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+  const text = document.createElement('span');
+  text.textContent = img.alt;
+  text.style.backgroundColor = color;
+  text.classList.add("avatar-alt");
+  img.replaceWith(text);
+}
 
 function getAge(birthday) {
   const currentBirthday = new Date(birthday);
@@ -218,7 +242,7 @@ function getAge(birthday) {
     month += 12;
   }
 
-  return `years: ${years}, months: ${month}`;
+  return `${years} years ${month} months`;
 }
 
 const config2 = {
