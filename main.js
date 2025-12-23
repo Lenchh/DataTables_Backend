@@ -79,11 +79,11 @@ function createInput(column, elementOfData) {
       input.classList.add("input-text");
       input.type = elementInput.type || "text";
       input.placeholder = elementInput.label || column.title;
-      if(elementInput.type === 'number') {
+      if (elementInput.type === 'number') {
         input.min = "1";
         input.value = "1";
       }
-      if(elementInput.type === 'color') {
+      if (elementInput.type === 'color') {
         input.classList.remove("input-text");
         input.classList.add("color-input");
       }
@@ -135,13 +135,26 @@ async function saveData(modalContent, modalWindow, config, el, id) {
 
     if (response.ok) {
       const data = await response.json();
-      alert("Дані збережено:)");
+      new Toast({
+        title: false,
+        text: 'Дані збережені:)',
+        theme: 'success',
+        autohide: true,
+        interval: 10000
+      });
       document.querySelector(config.parent).innerHTML = "";
       DataTable(config);
+      closeModalWindow(modalWindow);
     } else
-      alert("Error :(");
+      new Toast({
+        title: false,
+        text: 'Помилка при спробі зберегти дані',
+        theme: 'danger',
+        autohide: true,
+        interval: 10000
+      });
+    closeModalWindow(modalWindow);
   }
-  closeModalWindow(modalWindow);
 }
 
 function closeModalWindow(modalWindow) {
@@ -162,9 +175,19 @@ function createHead(config) {
 }
 
 async function getUsers(apiUrl) {
+  try{
   const response = await fetch(apiUrl);
   const data = await response.json();
   return Object.entries(data.data);
+  } catch {
+    new Toast({
+        title: false,
+        text: 'Помилка при спробі завантажити дані',
+        theme: 'danger',
+        autohide: true,
+        interval: 10000
+      });
+  }
 }
 
 function createRow(data, config) {
@@ -198,12 +221,25 @@ function createRow(data, config) {
 }
 
 async function deleteItem(apiUrl, config) {
-  const response = await fetch(apiUrl, { method: "DELETE" });
-  if (response.ok) {
+  try {
+    const response = await fetch(apiUrl, { method: "DELETE" });
+    new Toast({
+      title: false,
+      text: 'Дані видалені',
+      theme: 'success',
+      autohide: true,
+      interval: 10000
+    });
     document.querySelector(config.parent).innerHTML = "";
     DataTable(config);
-  } else {
-    console.log(":(");
+  } catch {
+    new Toast({
+      title: false,
+      text: 'Помилка при спробі видалити дані',
+      theme: 'danger',
+      autohide: true,
+      interval: 10000
+    });
   }
 }
 
@@ -213,9 +249,11 @@ const config1 = {
     { title: 'Ім’я', value: 'name', input: { type: 'text' } },
     { title: 'Прізвище', value: 'surname', input: { type: 'text' } },
     { title: 'Вік', value: (user) => getAge(user.birthday), input: { type: "date", name: "birthday", label: "День народження" } },
-    { title: 'Фото', value: (user) => 
-      `<img src="${user.avatar}" alt="${user.name[0]}${user.surname[0]}" onerror="handleImgError(this)"/>`, 
-       input: { type: "url", name: "avatar" } },
+    {
+      title: 'Фото', value: (user) =>
+        `<img src="${user.avatar}" alt="${user.name[0]}${user.surname[0]}" onerror="handleImgError(this)"/>`,
+      input: { type: "url", name: "avatar" }
+    },
     { title: 'Дії', value: 'actions' }
   ],
   apiUrl: "https://mock-api.shpp.me/opletnova/users"
