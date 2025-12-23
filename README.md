@@ -2,4 +2,4 @@ This repository contains solutions to tasks on the topic "HTTP. Requests. Backen
 Loading data from the backend.
 Adding/editing records in the table.
 Deleting rows from a table.
-Result of my work: https://lenchh.github.io/http/
+Result of my work: https://lenchh.github.io/DataTables_Backend/
